@@ -8,12 +8,15 @@ interface AgentTerminalProps {
 }
 
 export const AgentTerminal: React.FC<AgentTerminalProps> = ({ steps, isDecomposing }) => {
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = React.useState(false);
 
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [steps]);
+    // Only scroll the terminal's internal container when actively streaming new steps
+    if (isDecomposing && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [steps, isDecomposing]);
 
   const handleCopyLogs = () => {
     const fullLog = steps
@@ -105,7 +108,10 @@ export const AgentTerminal: React.FC<AgentTerminalProps> = ({ steps, isDecomposi
       </div>
 
       {/* Terminal Live Output Stream */}
-      <div className="flex-1 mt-3 p-4 rounded-xl bg-[#06080e] border border-slate-900 font-mono text-xs overflow-y-auto max-h-[320px] space-y-4">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 mt-3 p-4 rounded-xl bg-[#06080e] border border-slate-900 font-mono text-xs overflow-y-auto max-h-[320px] space-y-4"
+      >
         {steps.length === 0 ? (
           <div className="text-slate-500 flex flex-col items-center justify-center py-12 space-y-2">
             <Terminal className="w-8 h-8 text-slate-700" />
@@ -155,7 +161,6 @@ export const AgentTerminal: React.FC<AgentTerminalProps> = ({ steps, isDecomposi
             </div>
           ))
         )}
-        <div ref={terminalEndRef} />
       </div>
     </div>
   );
