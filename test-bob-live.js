@@ -88,7 +88,7 @@ async function runLiveDiagnostics() {
       console.log(`[Profile API] Active Team ID     : ${teamId} (${team?.name || 'Hackathon'})`);
       console.log(`[Profile API] Bobcoins Budget    : ${budgetLimit} Bobcoins (Limit)`);
       console.log(`[Profile API] Region Domain      : ${instance?.region_domain || 'us-east.bob.ibm.com'}`);
-      console.log('✓ IBM Bob Gateway Authentication SUCCESSFUL (200 OK)');
+      console.log('[SUCCESS] IBM Bob Gateway Authentication Verified (200 OK)');
     } else {
       console.warn(`[Profile API] Received non-200 status: ${profRes.status}`);
     }
@@ -143,7 +143,7 @@ async function runLiveDiagnostics() {
       const data = await chatRes.json();
       liveCompletionTokens = data.choices?.[0]?.message?.content || '';
       liveApiSucceeded = true;
-      console.log('✓ Live Granite 3.8B Inference Succeeded!');
+      console.log('[SUCCESS] Live Granite 3.8B Inference Succeeded');
     } else {
       const rawText = await chatRes.text();
       // Inspect for Cloudflare WAF block

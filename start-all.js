@@ -7,8 +7,8 @@ const { spawn } = require('child_process');
 const path = require('path');
 
 console.log('================================================================');
-console.log(' 🚀 BobMigrate: Autonomous Legacy Monolith Decomposer');
-console.log('    Official IBM Bob 2.0 Hackathon Showcase System');
+console.log(' [BOBMIGRATE] Autonomous Legacy Monolith Decomposer');
+console.log(' Official IBM Bob 2.0 Hackathon Showcase System');
 console.log('================================================================');
 
 const processes = [];
@@ -55,7 +55,7 @@ console.log('[3/3] Starting Dashboard UI on port 3000...');
 startProcess('Dashboard', 'npx', ['vite', '--port', '3000'], 'dashboard', '\x1b[32m');
 
 console.log('================================================================');
-console.log(' 🌐 Systems Active:');
+console.log(' Active System Endpoints:');
 console.log('    - Interactive Dashboard: http://localhost:3000');
 console.log('    - Core Engine REST API:  http://localhost:5000/api/analyze');
 console.log('    - Legacy Monolith App:   http://localhost:4000/health');

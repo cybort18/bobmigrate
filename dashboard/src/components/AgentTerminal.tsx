@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Terminal, CheckCircle2, Clock, AlertCircle, FileCode2, Copy, Check, Sparkles } from 'lucide-react';
+import { Terminal, CheckCircle2, Clock, AlertCircle, FileCode2, Copy, Check, Sparkles, Cpu } from 'lucide-react';
 import { BobAgentReasoningStep } from '../types/index.js';
 
 interface AgentTerminalProps {
@@ -130,8 +130,9 @@ export const AgentTerminal: React.FC<AgentTerminalProps> = ({ steps, isDecomposi
 
               {/* Thought Process Block */}
               <div className="bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/80 text-[11px] text-slate-300 font-sans leading-relaxed whitespace-pre-line">
-                <span className="text-purple-400 font-mono text-[10px] block mb-1 font-semibold">
-                  ⚡ IBM Bob 2.0 Granite Reasoning:
+                <span className="text-purple-400 font-mono text-[10px] flex items-center gap-1.5 mb-1 font-semibold">
+                  <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                  IBM Granite 3.8B Reasoning:
                 </span>
                 {step.thoughtProcess}
               </div>

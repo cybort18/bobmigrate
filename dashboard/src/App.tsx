@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import confetti from 'canvas-confetti';
 import { Navbar } from './components/Navbar';
 import { ArchitectureGraph } from './components/ArchitectureGraph';
 import { AgentTerminal } from './components/AgentTerminal';
@@ -114,13 +113,6 @@ export const App: React.FC = () => {
         setDecomposition(result);
         setSteps(result.steps);
         setBobcoinsRemaining(result.bobcoinsBudgetRemaining);
-
-        // Celebrate successful autonomous synthesis!
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
       }
     } catch (err) {
       console.error('Decomposition error:', err);

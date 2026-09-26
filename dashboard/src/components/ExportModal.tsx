@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Download, FolderArchive, FileCode, Check, Copy } from 'lucide-react';
+import { X, Download, FolderArchive, Folder, FileCode, Check, Copy } from 'lucide-react';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -53,7 +53,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, files
             Package Contents ({files.length + 3} files):
           </div>
           <div className="rounded-xl bg-slate-950 p-3 border border-slate-800/80 max-h-[220px] overflow-y-auto space-y-1.5 font-mono text-xs text-slate-300">
-            <div className="text-blue-400 font-bold">📦 orders-service/</div>
+            <div className="text-blue-400 font-bold flex items-center gap-1.5">
+              <Folder className="w-3.5 h-3.5 text-blue-400" />
+              <span>orders-service/</span>
+            </div>
             {files.map((f, i) => (
               <div key={i} className="pl-4 flex items-center justify-between text-slate-300 hover:text-white">
                 <span className="flex items-center gap-1.5">
