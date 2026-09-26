@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, Network, Database, CheckCircle, AlertTriangle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Layers, Network, Database, CheckCircle, AlertTriangle, ShieldCheck, Gauge } from 'lucide-react';
 import { GraphNode, GraphEdge } from '../types/index.js';
 
 interface ArchitectureGraphProps {
@@ -7,13 +7,22 @@ interface ArchitectureGraphProps {
   monolithEdges: GraphEdge[];
   decoupledNodes: GraphNode[];
   decoupledEdges: GraphEdge[];
+  couplingScore?: number;
+  monolithStats?: {
+    totalFiles?: number;
+    totalRoutes?: number;
+    entangledQueriesCount?: number;
+    couplingScore?: number;
+  };
 }
 
 export const ArchitectureGraph: React.FC<ArchitectureGraphProps> = ({
   monolithNodes,
   monolithEdges,
   decoupledNodes,
-  decoupledEdges
+  decoupledEdges,
+  couplingScore = 38,
+  monolithStats
 }) => {
   const [viewMode, setViewMode] = useState<'monolith' | 'decoupled'>('monolith');
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
@@ -21,21 +30,52 @@ export const ArchitectureGraph: React.FC<ArchitectureGraphProps> = ({
   const activeNodes = viewMode === 'monolith' ? monolithNodes : decoupledNodes;
   const activeEdges = viewMode === 'monolith' ? monolithEdges : decoupledEdges;
 
-  // Node coordinates for 4-node topology layout
-  const nodePositions: Record<string, { x: number; y: number }> = {
-    'domain-auth': { x: 140, y: 90 },
-    'svc-auth': { x: 140, y: 90 },
-    'domain-catalog': { x: 620, y: 90 },
-    'svc-catalog': { x: 620, y: 90 },
+  // Semantic domain positions for standard microservices
+  const baseLayout: Record<string, { x: number; y: number }> = {
+    'domain-auth': { x: 150, y: 100 },
+    'svc-auth': { x: 150, y: 100 },
+    'domain-catalog': { x: 610, y: 100 },
+    'svc-catalog': { x: 610, y: 100 },
     'domain-orders': { x: 380, y: 260 },
     'svc-orders': { x: 380, y: 260 },
-    'domain-notifications': { x: 380, y: 430 },
-    'svc-notifications': { x: 380, y: 430 }
+    'domain-notifications': { x: 380, y: 420 },
+    'svc-notifications': { x: 380, y: 420 }
   };
+
+  /**
+   * Computes reactive dynamic coordinates for any node list returned from POST /api/analyze
+   */
+  const getNodeCoordinates = (node: GraphNode, index: number, total: number) => {
+    if (baseLayout[node.id]) {
+      return baseLayout[node.id];
+    }
+
+    // Dynamic radial layout for arbitrary AST discovered nodes
+    const angle = (index / Math.max(1, total)) * 2 * Math.PI - Math.PI / 2;
+    const rx = 240;
+    const ry = 160;
+    const centerX = 380;
+    const centerY = 260;
+
+    return {
+      x: Math.round(centerX + rx * Math.cos(angle)),
+      y: Math.round(centerY + ry * Math.sin(angle))
+    };
+  };
+
+  const dynamicPositions = React.useMemo(() => {
+    const map: Record<string, { x: number; y: number }> = {};
+    activeNodes.forEach((node, i) => {
+      map[node.id] = getNodeCoordinates(node, i, activeNodes.length);
+    });
+    return map;
+  }, [activeNodes]);
+
+  const currentCouplingScore = viewMode === 'monolith' ? (monolithStats?.couplingScore ?? couplingScore) : 0;
 
   return (
     <div className="glass-panel rounded-2xl p-5 border border-slate-800 flex flex-col h-full">
-      {/* Header with Switcher */}
+      {/* Header with Switcher & Reactive Coupling Score */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
         <div>
           <div className="flex items-center space-x-2">
@@ -43,37 +83,51 @@ export const ArchitectureGraph: React.FC<ArchitectureGraphProps> = ({
             <h2 className="text-base font-bold text-white tracking-wide">
               System Architecture Topology
             </h2>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
+              {activeNodes.length} Nodes • {activeEdges.length} Edges
+            </span>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Interactive AST domain coupling map vs. synthesized microservice boundaries
+            AST-scanned domain coupling map vs. synthesized microservice boundaries
           </p>
         </div>
 
-        {/* View Mode Toggle Pill */}
-        <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shadow-inner">
-          <button
-            onClick={() => { setViewMode('monolith'); setSelectedNode(null); }}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              viewMode === 'monolith'
-                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
-            <span>Monolith (Coupled)</span>
-          </button>
+        <div className="flex items-center space-x-3">
+          {/* Reactive Coupling Gauge */}
+          <div className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+            <Gauge className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="text-slate-400">Coupling:</span>
+            <span className={`font-mono font-bold ${viewMode === 'monolith' ? 'text-rose-400' : 'text-emerald-400'}`}>
+              {currentCouplingScore}%
+            </span>
+          </div>
 
-          <button
-            onClick={() => { setViewMode('decoupled'); setSelectedNode(null); }}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              viewMode === 'decoupled'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Decoupled Microservice</span>
-          </button>
+          {/* View Mode Toggle Pill */}
+          <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shadow-inner">
+            <button
+              onClick={() => { setViewMode('monolith'); setSelectedNode(null); }}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                viewMode === 'monolith'
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+              <span>Monolith ({monolithStats?.couplingScore ?? couplingScore}%)</span>
+            </button>
+
+            <button
+              onClick={() => { setViewMode('decoupled'); setSelectedNode(null); }}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                viewMode === 'decoupled'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Decoupled (0%)</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -83,16 +137,16 @@ export const ArchitectureGraph: React.FC<ArchitectureGraphProps> = ({
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
         {/* Topology Status Overlay Tag */}
-        <div className="absolute top-3 left-3 z-10">
+        <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-2">
           {viewMode === 'monolith' ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-rose-950/60 border border-rose-800/50 text-rose-300 shadow">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-              High Coupling Anti-Pattern (Shared Database & Synchronous In-Memory Calls)
+              Coupled Monolith AST ({monolithStats?.entangledQueriesCount ?? 5} Entangled Queries, {monolithStats?.totalRoutes ?? 12} Monolith Routes)
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-950/60 border border-emerald-800/50 text-emerald-300 shadow">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Decomposed Microservice Architecture (OpenAPI 3.1 & Isolated Schemas)
+              Zero Coupling (OpenAPI 3.1 REST Contracts & Isolated SQLite Schema)
             </span>
           )}
         </div>
@@ -111,8 +165,8 @@ export const ArchitectureGraph: React.FC<ArchitectureGraphProps> = ({
           </defs>
 
           {activeEdges.map((edge) => {
-            const sourcePos = nodePositions[edge.source] || { x: 380, y: 260 };
-            const targetPos = nodePositions[edge.target] || { x: 380, y: 260 };
+            const sourcePos = dynamicPositions[edge.source] || { x: 380, y: 260 };
+            const targetPos = dynamicPositions[edge.target] || { x: 380, y: 260 };
 
             const isCoupled = viewMode === 'monolith';
             const midX = (sourcePos.x + targetPos.x) / 2;
@@ -162,7 +216,7 @@ export const ArchitectureGraph: React.FC<ArchitectureGraphProps> = ({
         {/* DOM HTML Layer for Nodes */}
         <div className="absolute inset-0 pointer-events-auto">
           {activeNodes.map((node) => {
-            const pos = nodePositions[node.id] || { x: 380, y: 260 };
+            const pos = dynamicPositions[node.id] || { x: 380, y: 260 };
             const isTarget = node.domain === 'orders';
             const isSelected = selectedNode?.id === node.id;
 

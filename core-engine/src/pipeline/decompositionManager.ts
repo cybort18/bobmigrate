@@ -146,14 +146,23 @@ export class DecompositionManager {
     this.broadcastStep(step3Start);
     steps.push(step3Start);
 
-    const synthesized = ServiceSynthesizer.synthesizeOrdersMicroservice();
-
     const bobResp3 = await this.bobAdapter.callBobAgent(
       'Service Synthesizer',
-      `Review synthesized microservice architecture and test coverage for '${targetDomain}'.`,
-      { filesCount: synthesized.files.length }
+      `Synthesize and review decoupled microservice architecture and test coverage for '${targetDomain}'.`,
+      {
+        targetDomain,
+        domainRoutes: scan.routes.filter(r => r.domain === targetDomain).map(r => r.path),
+        domainTables: scan.schemas.filter(s => s.domain === targetDomain).map(s => s.tableName)
+      }
     );
     totalBobcoinsUsed += bobResp3.bobcoinsConsumed;
+
+    const synthesized = ServiceSynthesizer.synthesizeService(
+      targetDomain,
+      scan.routes,
+      scan.schemas,
+      bobResp3.content
+    );
 
     const step3Complete: BobAgentReasoningStep = {
       stepNumber: 3,

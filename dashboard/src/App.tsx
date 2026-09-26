@@ -238,6 +238,8 @@ export const App: React.FC = () => {
                 { id: 'edge-dec-orders-catalog', source: 'svc-orders', target: 'svc-catalog', label: 'Decoupled: REST Client /reserve-stock', type: 'rest_contract', couplingSeverity: 'LOW' },
                 { id: 'edge-dec-orders-notif', source: 'svc-orders', target: 'svc-notifications', label: 'Decoupled: Async Event Bus (order.placed.v1)', type: 'event_bus', couplingSeverity: 'LOW', animated: true }
               ]}
+              couplingScore={analysis?.monolithStats?.couplingScore}
+              monolithStats={analysis?.monolithStats}
             />
           )}
 

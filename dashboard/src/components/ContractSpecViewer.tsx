@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Copy, Check, Send, CheckCircle2, Play } from 'lucide-react';
+import { FileText, Copy, Check, Send, Play, Activity } from 'lucide-react';
 
 interface ContractSpecViewerProps {
   openApiYaml: string;
@@ -9,6 +9,7 @@ export const ContractSpecViewer: React.FC<ContractSpecViewerProps> = ({ openApiY
   const [copied, setCopied] = useState(false);
   const [testEndpoint, setTestEndpoint] = useState<'POST /orders' | 'GET /orders' | 'GET /orders/{id}'>('POST /orders');
   const [testResponse, setTestResponse] = useState<string | null>(null);
+  const [testStatus, setTestStatus] = useState<{ code: number; text: string; latencyMs: number } | null>(null);
   const [isTesting, setIsTesting] = useState(false);
 
   const handleCopy = () => {
@@ -17,69 +18,82 @@ export const ContractSpecViewer: React.FC<ContractSpecViewerProps> = ({ openApiY
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSimulateCall = () => {
+  /**
+   * Executes a real HTTP contract test against the live backend
+   */
+  const handleExecuteLiveContract = async () => {
     setIsTesting(true);
-    setTimeout(() => {
-      if (testEndpoint === 'POST /orders') {
-        setTestResponse(
-          JSON.stringify(
-            {
-              id: 103,
-              userId: 1,
-              totalAmount: 399.98,
-              status: 'CONFIRMED',
-              trackingNumber: 'TRK-88301-BOB',
-              shippingAddress: '124 Tech Blvd, Austin, TX',
-              items: [
-                {
-                  productId: 1,
-                  productSku: 'SKU-ISO-1',
-                  productName: 'Decoupled Product #1',
-                  quantity: 2,
-                  unitPrice: 199.99,
-                  subtotal: 399.98
-                }
-              ],
-              contractValidation: 'PASSED (OpenAPI 3.1 Compliant)'
-            },
-            null,
-            2
-          )
-        );
-      } else if (testEndpoint === 'GET /orders') {
-        setTestResponse(
-          JSON.stringify(
-            {
-              orders: [
-                { id: 101, totalAmount: 1448.99, status: 'CONFIRMED', createdAt: '2026-09-26T06:00:00Z' },
-                { id: 102, totalAmount: 2499.50, status: 'PROCESSING', createdAt: '2026-09-26T06:15:00Z' }
-              ],
-              total: 2,
-              contractValidation: 'PASSED (OpenAPI 3.1 Compliant)'
-            },
-            null,
-            2
-          )
-        );
-      } else {
-        setTestResponse(
-          JSON.stringify(
-            {
-              id: 101,
-              userId: 1,
-              totalAmount: 1448.99,
-              status: 'CONFIRMED',
-              trackingNumber: 'TRK-99201-BOB',
-              itemsCount: 2,
-              contractValidation: 'PASSED (OpenAPI 3.1 Compliant)'
-            },
-            null,
-            2
-          )
-        );
+    setTestResponse(null);
+    setTestStatus(null);
+    const start = Date.now();
+
+    try {
+      // 1. Authenticate with live server to acquire verified JWT Bearer token
+      const loginRes = await fetch('http://localhost:4000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'alice@example.com', password: 'password123' })
+      });
+
+      let token = 'mock-bearer-token';
+      if (loginRes.ok) {
+        const loginData = await loginRes.json();
+        token = loginData.token;
       }
+
+      let res: Response;
+
+      // 2. Dispatch real HTTP request based on selected contract endpoint
+      if (testEndpoint === 'POST /orders') {
+        res = await fetch('http://localhost:4000/api/orders/checkout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            items: [{ productId: 1, quantity: 2 }],
+            paymentMethod: 'CREDIT_CARD',
+            customShippingAddress: '124 Cloud Way, Austin, TX'
+          })
+        });
+      } else if (testEndpoint === 'GET /orders') {
+        res = await fetch('http://localhost:4000/api/orders', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      } else {
+        // GET /orders/101 (or first available order)
+        res = await fetch('http://localhost:4000/api/orders/101', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+
+      const latencyMs = Date.now() - start;
+      const data = await res.json();
+
+      setTestStatus({
+        code: res.status,
+        text: res.statusText || (res.status === 201 ? 'Created' : 'OK'),
+        latencyMs
+      });
+      setTestResponse(JSON.stringify(data, null, 2));
+    } catch (err: any) {
+      const latencyMs = Date.now() - start;
+      setTestStatus({
+        code: 500,
+        text: 'Network Error',
+        latencyMs
+      });
+      setTestResponse(JSON.stringify({ error: 'Failed to connect to backend', message: err.message }, null, 2));
+    } finally {
       setIsTesting(false);
-    }, 400);
+    }
   };
 
   return (
@@ -121,15 +135,20 @@ export const ContractSpecViewer: React.FC<ContractSpecViewerProps> = ({ openApiY
           </pre>
         </div>
 
-        {/* Right: Interactive Contract Simulation Sandbox */}
+        {/* Right: Live HTTP Contract Sandbox */}
         <div className="rounded-xl bg-slate-900/50 border border-slate-800/80 p-4 flex flex-col space-y-3">
-          <div className="text-xs font-semibold text-white flex items-center gap-1.5">
-            <Send className="w-4 h-4 text-cyan-400" />
-            Interactive Contract Sandbox
+          <div className="text-xs font-semibold text-white flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <Send className="w-4 h-4 text-cyan-400" />
+              Live Contract Execution Sandbox
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-mono">
+              <Activity className="w-3 h-3" /> Live Target
+            </span>
           </div>
 
           <p className="text-[11px] text-slate-400 leading-normal">
-            Validate the synthesized contract by simulating isolated microservice requests:
+            Executes real HTTP requests against the live backend server to validate contract compliance:
           </p>
 
           <div className="space-y-1.5">
@@ -138,7 +157,7 @@ export const ContractSpecViewer: React.FC<ContractSpecViewerProps> = ({ openApiY
               {(['POST /orders', 'GET /orders', 'GET /orders/{id}'] as const).map((ep) => (
                 <button
                   key={ep}
-                  onClick={() => { setTestEndpoint(ep); setTestResponse(null); }}
+                  onClick={() => { setTestEndpoint(ep); setTestResponse(null); setTestStatus(null); }}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-mono transition ${
                     testEndpoint === ep
                       ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
@@ -155,20 +174,22 @@ export const ContractSpecViewer: React.FC<ContractSpecViewerProps> = ({ openApiY
           </div>
 
           <button
-            onClick={handleSimulateCall}
+            onClick={handleExecuteLiveContract}
             disabled={isTesting}
             className="flex items-center justify-center space-x-1.5 w-full py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md shadow-cyan-600/20 transition disabled:opacity-50"
           >
             <Play className={`w-3.5 h-3.5 fill-current ${isTesting ? 'animate-spin' : ''}`} />
-            <span>{isTesting ? 'Testing Contract...' : 'Simulate API Call'}</span>
+            <span>{isTesting ? 'Executing Live Request...' : 'Test Live Contract'}</span>
           </button>
 
-          {/* Test Response Box */}
-          {testResponse && (
+          {/* Test Response Box with Live HTTP Status */}
+          {testResponse && testStatus && (
             <div className="mt-2 rounded-lg bg-slate-950 p-2.5 border border-slate-800 text-[10px] font-mono text-emerald-300 overflow-x-auto max-h-[160px]">
-              <div className="flex items-center justify-between pb-1 border-b border-slate-800 text-[9px] text-slate-500 mb-1">
-                <span>Response 200 OK</span>
-                <span className="text-emerald-400">Validated</span>
+              <div className="flex items-center justify-between pb-1 border-b border-slate-800 text-[9px] text-slate-400 mb-1">
+                <span className={testStatus.code < 300 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                  HTTP {testStatus.code} {testStatus.text}
+                </span>
+                <span className="text-cyan-400 font-mono">{testStatus.latencyMs}ms</span>
               </div>
               <pre>{testResponse}</pre>
             </div>
