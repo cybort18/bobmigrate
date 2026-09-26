@@ -1,5 +1,7 @@
 import archiver from 'archiver';
 import { Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import { GeneratedArtifacts } from '../types/index.js';
 
 export class ZipPackager {
@@ -18,20 +20,49 @@ export class ZipPackager {
 
     archive.pipe(res);
 
-    // 1. Add synthesized microservice files
-    for (const file of artifacts.microserviceFiles) {
-      archive.append(file.code, { name: `orders-service/${file.filePath}` });
+    // 1. Check if real orders-service created by IBM Bob exists on disk
+    const rootPath1 = path.resolve(process.cwd(), 'orders-service');
+    const rootPath2 = path.resolve(process.cwd(), '../orders-service');
+    const actualDir = fs.existsSync(rootPath1) ? rootPath1 : (fs.existsSync(rootPath2) ? rootPath2 : null);
+
+    if (actualDir) {
+      console.log(`[ZipPackager] Packaging real orders-service codebase from: ${actualDir}`);
+      archive.directory(actualDir, 'orders-service', (entry) => {
+        // Exclude dependencies and database binaries
+        if (
+          entry.name.includes('node_modules') ||
+          entry.name.endsWith('.db') ||
+          entry.name.endsWith('.db-journal') ||
+          entry.name.includes('.git')
+        ) {
+          return false;
+        }
+        return entry;
+      });
+    } else if (artifacts.microserviceFiles) {
+      // Fallback: Add synthesized microservice files from in-memory artifacts
+      for (const file of artifacts.microserviceFiles) {
+        archive.append(file.code, { name: `orders-service/${file.filePath}` });
+      }
     }
 
     // 2. Add OpenAPI spec
-    archive.append(artifacts.openApiYaml, { name: 'orders-service/openapi.yaml' });
+    if (artifacts.openApiYaml) {
+      archive.append(artifacts.openApiYaml, { name: 'orders-service/openapi.yaml' });
+    }
 
     // 3. Add Docker files
-    archive.append(artifacts.dockerfile, { name: 'orders-service/Dockerfile' });
-    archive.append(artifacts.dockerComposeYaml, { name: 'orders-service/docker-compose.yml' });
+    if (artifacts.dockerfile) {
+      archive.append(artifacts.dockerfile, { name: 'orders-service/Dockerfile' });
+    }
+    if (artifacts.dockerComposeYaml) {
+      archive.append(artifacts.dockerComposeYaml, { name: 'orders-service/docker-compose.yml' });
+    }
 
     // 4. Add Readme
-    archive.append(artifacts.readmeMarkdown, { name: 'orders-service/README.md' });
+    if (artifacts.readmeMarkdown) {
+      archive.append(artifacts.readmeMarkdown, { name: 'orders-service/README.md' });
+    }
 
     archive.finalize();
   }
