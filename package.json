@@ -1,0 +1,29 @@
+{
+  "name": "bobmigrate-workspace",
+  "version": "1.0.0",
+  "description": "BobMigrate - Autonomous Legacy Monolith Decomposer & Microservice Synthesizer (IBM Bob 2.0 Hackathon)",
+  "scripts": {
+    "monolith:install": "npm install --prefix sample-monolith",
+    "monolith:seed": "npm run seed --prefix sample-monolith",
+    "monolith:start": "npm start --prefix sample-monolith",
+    "engine:install": "npm install --prefix core-engine",
+    "engine:build": "npm run build --prefix core-engine",
+    "engine:start": "npm start --prefix core-engine",
+    "dashboard:install": "npm install --prefix dashboard",
+    "dashboard:build": "npm run build --prefix dashboard",
+    "dashboard:dev": "npm run dev --prefix dashboard",
+    "setup": "npm run monolith:install && npm run monolith:seed && npm run engine:install && npm run engine:build && npm run dashboard:install && npm run dashboard:build",
+    "start": "node start-all.js"
+  },
+  "keywords": [
+    "ibm-bob",
+    "bob-2.0",
+    "hackathon",
+    "monolith-decomposition",
+    "microservices",
+    "granite-3.8b",
+    "context-pruning"
+  ],
+  "author": "BobMigrate Team",
+  "license": "Apache-2.0"
+}
