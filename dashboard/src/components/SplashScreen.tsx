@@ -102,19 +102,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
 
       {/* Main Content Card */}
       <div className="relative z-10 flex flex-col items-center px-6 max-w-lg w-full text-center">
-        {/* Animated Brand Logo Container */}
+        {/* Animated Brand Logo (Clean & Borderless) */}
         <div className="relative group mb-6 transition-transform duration-700 hover:scale-[1.02]">
-          {/* Logo Backlight Glow */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/30 via-indigo-500/30 to-purple-600/25 rounded-3xl blur-xl opacity-80 group-hover:opacity-100 transition-opacity" />
+          {/* Subtle Ambient Logo Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[440px] h-28 bg-gradient-to-r from-blue-600/30 via-indigo-500/25 to-purple-600/20 rounded-full blur-2xl opacity-75 pointer-events-none" />
 
-          {/* SVG Logo Graphic */}
-          <div className="relative px-6 py-4 rounded-2xl bg-[#0b0e17]/80 border border-slate-800/80 shadow-2xl backdrop-blur-md">
-            <img
-              src="/logo.svg"
-              alt="BobMigrate Logo"
-              className="w-[280px] sm:w-[360px] md:w-[420px] h-auto object-contain filter drop-shadow-[0_8px_20px_rgba(15,98,254,0.35)]"
-            />
-          </div>
+          {/* Clean Frameless SVG Logo Graphic */}
+          <img
+            src="/logo.svg"
+            alt="BobMigrate Logo"
+            className="relative z-10 w-[290px] sm:w-[380px] md:w-[440px] h-auto object-contain filter drop-shadow-[0_10px_25px_rgba(15,98,254,0.4)]"
+          />
         </div>
 
         {/* Hackathon Badge & Description */}
@@ -135,11 +133,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-400">
           <Cpu className="w-3 h-3 text-blue-400 animate-pulse" />
           <span>{statusText}</span>
-        </div>
-
-        {/* Subtle skip prompt */}
-        <div className="mt-8 text-[10px] text-slate-600 hover:text-slate-400 transition-colors uppercase tracking-wider font-mono">
-          Click anywhere or press any key to enter
         </div>
       </div>
     </div>
