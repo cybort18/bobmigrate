@@ -197,9 +197,15 @@ export const App: React.FC = () => {
         <div className="relative overflow-hidden rounded-2xl glass-panel p-6 border border-slate-800 bg-gradient-to-r from-blue-950/30 via-slate-900/60 to-purple-950/30">
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-2 max-w-3xl">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/20">
-                <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                IBM Bob 2.0 Hackathon Showcase Project
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                  IBM Bob 2.0 Hackathon Showcase Project
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Interactive Demo Mode
+                </div>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
                 Autonomous Legacy Monolith Decomposer & Microservice Synthesizer
@@ -210,6 +216,13 @@ export const App: React.FC = () => {
                 autonomously identify domain boundaries, synthesize OpenAPI 3.1 contracts, and generate production-grade 
                 isolated microservices with tests and Dockerfiles—operating strictly within the 40 Bobcoins quota.
               </p>
+              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 mt-2">
+                <span className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono text-[10px] uppercase font-bold shrink-0">Demo vs Enterprise</span>
+                <span>
+                  This live web dashboard demonstrates the end-to-end pipeline using our canonical enterprise monolith benchmark. 
+                  In real-world enterprise production, BobMigrate runs as a non-invasive CLI or CI/CD agent that inspects target repositories in read-only mode, with zero code collision.
+                </span>
+              </div>
             </div>
 
             {/* Quick Metrics Cards */}

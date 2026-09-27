@@ -25,15 +25,16 @@
 
 ## 📑 Table of Contents
 1. [Overview & Problem Statement](#1-overview--problem-statement)
-2. [How the System Works (End-to-End Architecture)](#2-how-the-system-works-end-to-end-architecture)
-3. [How to Operate & Use This Tool (User Guide)](#3-how-to-operate--use-this-tool-user-guide)
+2. [Important Context: Demo Showcase vs. Real-World Enterprise Usage](#2-important-context-demo-showcase-vs-real-world-enterprise-usage)
+3. [How the System Works (End-to-End Architecture)](#3-how-the-system-works-end-to-end-architecture)
+4. [How to Operate & Use This Tool (User Guide)](#4-how-to-operate--use-this-tool-user-guide)
    - [Method A: Visual Web Dashboard (Live Cloud / Local)](#method-a-interactive-web-dashboard-recommended)
    - [Method B: Headless REST API & CLI Automation](#method-b-headless-rest-api--cli-automation)
    - [Method C: Running the Synthesized Microservice](#method-c-running-and-verifying-the-synthesized-microservice)
-4. [Environment Configuration (`.env`)](#4-environment-configuration-env)
-5. [Core Engine REST API Reference](#5-core-engine-rest-api-reference)
-6. [Repository Anatomy](#6-repository-anatomy)
-7. [Compliance with IBM Bob 2.0 Guidelines](#7-compliance-with-ibm-bob-20-guidelines)
+5. [Environment Configuration (`.env`)](#5-environment-configuration-env)
+6. [Core Engine REST API Reference](#6-core-engine-rest-api-reference)
+7. [Repository Anatomy](#7-repository-anatomy)
+8. [Compliance with IBM Bob 2.0 Guidelines](#8-compliance-with-ibm-bob-20-guidelines)
 
 ---
 
@@ -50,7 +51,47 @@ Enterprise engineering teams spend **millions of dollars and months of manual de
 
 ---
 
-## 2. How the System Works (End-to-End Architecture)
+## 2. Important Context: Demo Showcase vs. Real-World Enterprise Usage
+
+To ensure clear understanding for hackathon evaluators and enterprise architects, it is critical to distinguish between the **Live Demo Showcase** and **Real-World Enterprise Production**:
+
+### 🎯 The Live Demo Showcase (What is Deployed on Vercel)
+- **Zero-Barrier Evaluation**: Enterprise codebases are proprietary, confidential, and massive. To allow hackathon judges to evaluate BobMigrate without cloning corporate codebases or setting up local databases, we deployed an end-to-end benchmark environment at **[https://bobmigrate.vercel.app](https://bobmigrate.vercel.app)**.
+- **Canonical Monolith Benchmark (`sample-monolith`)**: The demo operates on a realistic, multi-domain legacy e-commerce application (`BobMarket`: Auth, Catalog, Orders, Notifications) featuring cross-domain SQL joins and synchronous coupling.
+- **Full Capabilities on Display**: Demonstrates real-time AST coupling detection, 85.2% token context pruning, multi-step IBM Bob 2.0 reasoning, OpenAPI 3.1 contract simulation, and instant 1-click ZIP export.
+
+### 🏢 Real-World Enterprise Usage (How Companies Actually Use BobMigrate)
+In a real enterprise engineering organization, BobMigrate is **NOT** mixed into or installed inside the company's monolithic repository. It acts as an external modernization orchestrator:
+
+| Aspect | Live Demo Showcase | Real-World Enterprise Production |
+| :--- | :--- | :--- |
+| **Execution Environment** | Hosted Cloud Dashboard ([bobmigrate.vercel.app](https://bobmigrate.vercel.app)) | Standalone CLI, Dockerized Agent Runner, or CI/CD Pipeline |
+| **Target Monolith** | Pre-configured `sample-monolith` benchmark | Any private enterprise repository (e.g., `/path/to/corporate-monolith`) |
+| **Code Collision Risk** | N/A (Isolated demo repository) | **Zero Collision**: Operates read-only via AST parsing without modifying original code |
+| **Output Destination** | In-browser preview & instant `.zip` export | Independent Git repository, new branch, or dedicated `/services/<domain>` folder |
+| **Automation** | Visual Web Dashboard with 1-click decomposition | Headless CLI / REST API integrated into developer platforms or GitHub Actions |
+
+#### How Enterprise Teams Run BobMigrate on Their Own Codebase:
+1. **Zero Intrusion (Read-Only Scanning)**:
+   BobMigrate runs as a standalone tool (CLI or Docker container) that takes the target enterprise monolith path as input:
+   ```bash
+   bobmigrate analyze --target /path/to/enterprise-monolith
+   ```
+   BobMigrate parses the Abstract Syntax Tree (AST) strictly in **read-only mode**. No files in the company's repository are mutated, overwritten, or contaminated with BobMigrate's internal code.
+
+2. **Isolated Microservice Generation**:
+   When BobMigrate decomposes a domain (e.g. `Orders` or `Billing`), it outputs the synthesized microservice into a completely isolated directory or initializes a brand-new Git repository:
+   ```bash
+   bobmigrate decompose \
+     --target /path/to/enterprise-monolith \
+     --domain orders \
+     --output-dir ../microservices/orders-service
+   ```
+   The generated microservice includes its own dedicated schema migration, HTTP client adapters, automated test suites, and Docker container configurations ready for production deployment.
+
+---
+
+## 3. How the System Works (End-to-End Architecture)
 
 BobMigrate does **NOT** blindly dump entire monolithic repositories into an LLM. Instead, it follows a 4-phase deterministic pipeline:
 
@@ -128,7 +169,7 @@ graph TD
 
 ---
 
-## 3. How to Operate & Use This Tool (User Guide)
+## 4. How to Operate & Use This Tool (User Guide)
 
 BobMigrate can be operated in **three distinct ways**: via the **Visual Web Dashboard**, via **Headless REST API / CLI**, or by **Running the Resulting Microservice**.
 
@@ -246,7 +287,7 @@ Docker containerizes the service with isolated environment configs and persisten
 
 ---
 
-## 4. Environment Configuration (`.env`)
+## 5. Environment Configuration (`.env`)
 
 BobMigrate comes with sensible fallback benchmark datasets, but connecting live IBM Bob 2.0 credentials unlocks real-time LLM inference:
 
@@ -275,7 +316,7 @@ MONOLITH_PORT=4000      # Sample Legacy Monolith
 
 ---
 
-## 5. Core Engine REST API Reference
+## 6. Core Engine REST API Reference
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -290,7 +331,7 @@ MONOLITH_PORT=4000      # Sample Legacy Monolith
 
 ---
 
-## 6. Repository Anatomy
+## 7. Repository Anatomy
 
 ```text
 Hackathon IBM BOB 2.0/
@@ -338,7 +379,7 @@ Hackathon IBM BOB 2.0/
 
 ---
 
-## 7. Compliance with IBM Bob 2.0 Guidelines
+## 8. Compliance with IBM Bob 2.0 Guidelines
 
 | Requirement | Implementation in BobMigrate | Compliance Status |
 | :--- | :--- | :---: |
@@ -350,6 +391,6 @@ Hackathon IBM BOB 2.0/
 
 ---
 
-## 8. License
+## 9. License
 
 Distributed under the **Apache 2.0 License**. Developed with pride for the **IBM Bob 2.0 Hackathon** by lablab.ai.
