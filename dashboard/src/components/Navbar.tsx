@@ -23,9 +23,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand identity */}
         <div className="flex items-center space-x-3.5">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-0.5 shadow-lg shadow-blue-500/20">
-            <div className="w-full h-full bg-[#0a0d14] rounded-[10px] flex items-center justify-center">
-              <Cpu className="w-5 h-5 text-blue-400" />
+          <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-0.5 shadow-lg shadow-blue-500/25 group transition-transform hover:scale-105">
+            <div className="w-full h-full bg-[#0a0d14] rounded-[10px] flex items-center justify-center overflow-hidden p-1">
+              <img src="/logo-icon.png" alt="BobMigrate Mascot" className="w-full h-full object-contain filter drop-shadow" />
             </div>
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -35,8 +35,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
-                Bob<span className="text-blue-400 font-extrabold">Migrate</span>
+              <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-0.5">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 font-extrabold">Bob</span>
+                <span className="text-white font-extrabold">Migrate</span>
               </h1>
               <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 border border-blue-500/30">
                 IBM Bob 2.0 Agent

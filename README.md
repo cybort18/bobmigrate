@@ -1,6 +1,11 @@
-# BobMigrate
-### Autonomous Legacy Monolith Decomposer & Microservice Synthesizer
-*Built with purpose for the official IBM Bob 2.0 Hackathon organized by lablab.ai*
+<p align="center">
+  <img src="./assets/logo.svg" alt="BobMigrate Logo" width="560">
+</p>
+
+<p align="center">
+  <strong>Autonomous Legacy Monolith Decomposer & Microservice Synthesizer</strong><br>
+  <em>Built with purpose for the official IBM Bob 2.0 Hackathon organized by lablab.ai</em>
+</p>
 
 ---
 

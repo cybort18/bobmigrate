@@ -25,9 +25,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, files
       <div className="relative w-full max-w-2xl glass-panel rounded-2xl p-6 border border-slate-700 shadow-2xl bg-[#0f1422] flex flex-col space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
-              <FolderArchive className="w-5 h-5" />
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-0.5 shadow-md shadow-blue-500/20 flex-shrink-0">
+              <div className="w-full h-full bg-[#0a0d14] rounded-[10px] flex items-center justify-center overflow-hidden p-1">
+                <img src="/logo-icon.png" alt="BobMigrate Mascot" className="w-full h-full object-contain" />
+              </div>
             </div>
             <div>
               <h3 className="text-base font-bold text-white">
