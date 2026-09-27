@@ -6,6 +6,7 @@ import { BeforeAfterViewer } from './components/BeforeAfterViewer';
 import { ContractSpecViewer } from './components/ContractSpecViewer';
 import { BobcoinsTracker } from './components/BobcoinsTracker';
 import { ExportModal } from './components/ExportModal';
+import { SplashScreen } from './components/SplashScreen';
 import {
   MonolithAnalysisResult,
   DecompositionResult,
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export const App: React.FC = () => {
+  const [showSplash, setShowSplash] = useState(true);
   const [analysis, setAnalysis] = useState<MonolithAnalysisResult>(benchmarkAnalysis);
   const [decomposition, setDecomposition] = useState<DecompositionResult>(benchmarkDecomposition);
   const [steps, setSteps] = useState<BobAgentReasoningStep[]>(benchmarkDecomposition.steps);
@@ -171,6 +173,14 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#080b11] text-slate-100 flex flex-col">
+      {/* Intro Brand Reveal Splash Screen */}
+      {showSplash && (
+        <SplashScreen
+          durationMs={1800}
+          onComplete={() => setShowSplash(false)}
+        />
+      )}
+
       {/* Top Navigation */}
       <Navbar
         onAnalyze={fetchAnalysis}
