@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/Inference-Granite_3.8B_Instruct-8a3ffc?style=for-the-badge" alt="Granite 3.8B">
   <img src="https://img.shields.io/badge/Bobcoins_Budget-40_Coins_Optimized-f59e0b?style=for-the-badge" alt="Bobcoins">
   <img src="https://img.shields.io/badge/Deploy-Vercel_Live-000000?style=for-the-badge&logo=vercel" alt="Vercel">
-  <img src="https://img.shields.io/badge/License-Apache_2.0-10b981?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge" alt="License">
 </p>
 
 ---
@@ -393,4 +393,4 @@ Hackathon IBM BOB 2.0/
 
 ## 9. License
 
-Distributed under the **Apache 2.0 License**. Developed with pride for the **IBM Bob 2.0 Hackathon** by lablab.ai.
+Distributed under the **MIT License** (in strict compliance with lablab.ai hackathon participation guidelines). Developed with pride for the **IBM Bob 2.0 Hackathon** by lablab.ai.
