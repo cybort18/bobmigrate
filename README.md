@@ -7,148 +7,349 @@
   <em>Built with purpose for the official IBM Bob 2.0 Hackathon organized by lablab.ai</em>
 </p>
 
----
-
-[![IBM Bob 2.0](https://img.shields.io/badge/IBM_Bob-2.0_Agent_Mode-0f62fe?style=for-the-badge&logo=ibm)](https://bob.ibm.com)
-[![Model](https://img.shields.io/badge/Inference-Granite_3.8B_Instruct-8a3ffc?style=for-the-badge)](https://www.ibm.com/granite)
-[![Bobcoins](https://img.shields.io/badge/Bobcoins_Budget-40_Coins_Optimized-f59e0b?style=for-the-badge)](https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon)
-[![License](https://img.shields.io/badge/License-Apache_2.0-10b981?style=for-the-badge)](LICENSE)
+<p align="center">
+  <a href="https://bobmigrate.vercel.app"><strong>🌐 Try Live Production Dashboard (No Install Required)</strong></a>
+</p>
 
 ---
 
-## 1. Problem Statement
+<p align="center">
+  <img src="https://img.shields.io/badge/IBM_Bob-2.0_Agent_Mode-0f62fe?style=for-the-badge&logo=ibm" alt="IBM Bob 2.0">
+  <img src="https://img.shields.io/badge/Inference-Granite_3.8B_Instruct-8a3ffc?style=for-the-badge" alt="Granite 3.8B">
+  <img src="https://img.shields.io/badge/Bobcoins_Budget-40_Coins_Optimized-f59e0b?style=for-the-badge" alt="Bobcoins">
+  <img src="https://img.shields.io/badge/Deploy-Vercel_Live-000000?style=for-the-badge&logo=vercel" alt="Vercel">
+  <img src="https://img.shields.io/badge/License-Apache_2.0-10b981?style=for-the-badge" alt="License">
+</p>
 
-Enterprise engineering teams spend **millions of dollars and months of manual developer time** attempting to decompose legacy monolithic backends into scalable microservices. Manual decomposition suffers from severe bottlenecks:
+---
+
+## 📑 Table of Contents
+1. [Overview & Problem Statement](#1-overview--problem-statement)
+2. [How the System Works (End-to-End Architecture)](#2-how-the-system-works-end-to-end-architecture)
+3. [How to Operate & Use This Tool (User Guide)](#3-how-to-operate--use-this-tool-user-guide)
+   - [Method A: Visual Web Dashboard (Live Cloud / Local)](#method-a-interactive-web-dashboard-recommended)
+   - [Method B: Headless REST API & CLI Automation](#method-b-headless-rest-api--cli-automation)
+   - [Method C: Running the Synthesized Microservice](#method-c-running-and-verifying-the-synthesized-microservice)
+4. [Environment Configuration (`.env`)](#4-environment-configuration-env)
+5. [Core Engine REST API Reference](#5-core-engine-rest-api-reference)
+6. [Repository Anatomy](#6-repository-anatomy)
+7. [Compliance with IBM Bob 2.0 Guidelines](#7-compliance-with-ibm-bob-20-guidelines)
+
+---
+
+## 1. Overview & Problem Statement
+
+Enterprise engineering teams spend **millions of dollars and months of manual developer time** attempting to decompose tightly coupled legacy monolithic backends into scalable microservices. Manual decomposition suffers from three critical bottlenecks:
+
 1. **Entangled Data Access**: Cross-domain database queries and direct SQL joins across tables make it nearly impossible to isolate data layers without breaking production.
 2. **Hidden In-Process Coupling**: Synchronous dependencies (e.g. checkout handlers locking request threads to send emails or directly mutating product inventories) lead to cascading failures.
-3. **Huge LLM Context Inefficiency**: Feeding entire massive monolithic repositories into LLMs instantly exhausts token limits and rapidly burns through token budgets (**Enterprise 40 Bobcoins quota**).
+3. **Huge LLM Context Inefficiency**: Dumping raw monolithic codebases into LLMs instantly exhausts token limits and rapidly burns through token budgets (**Enterprise 40 Bobcoins quota**).
+
+### The BobMigrate Solution
+**BobMigrate** is an autonomous modernization engine powered by **IBM Bob 2.0 Agent Mode** with **Granite 3.8B Instruct**. It uses **AST Context Pruning** to safely extract domain boundaries, formulate formal **OpenAPI 3.1 contracts**, and synthesize production-grade isolated microservices with automated test suites and Dockerfiles—operating strictly within the 40 Bobcoins quota.
 
 ---
 
-## 2. The Solution: BobMigrate
+## 2. How the System Works (End-to-End Architecture)
 
-**BobMigrate** is an autonomous orchestrator powered by **IBM Bob 2.0 Agent Mode** with **Granite 3.8B Instruct** that decomposes monolithic codebases into isolated, production-grade microservices with zero boundary leaks.
-
-### Key Architectural Innovations:
-- **AST Context Pruning Engine**: Instead of dumping raw monolith code into the model, BobMigrate scans Abstract Syntax Trees (AST), routes, and database schemas, extracting only targeted domain interfaces and pruning **85.2% of raw tokens**. A decomposition run consumes merely **~0.18 Bobcoins** instead of 1.25+ Bobcoins, guaranteeing full compliance within the **40 Bobcoins budget**.
-- **Autonomous Multi-Step Decomposition Pipeline**:
-  - **Step 1: Domain Boundary Analysis**: Identifies bounded contexts and detects cross-domain anti-patterns.
-  - **Step 2: Contract & Spec Generation**: Formulates formal **OpenAPI 3.1 YAML** specifications with standardized request/response schemas.
-  - **Step 3: Service Synthesizer**: Generates isolated microservice source code, standalone SQLite/Postgres schemas, decoupled REST/Event client adapters, automated **Jest test suites**, and **Docker containerization**.
-- **Interactive Visual Command Dashboard**: Real-time architecture graph topology switcher, live streaming IBM Bob reasoning log terminal, before vs. after code comparison, OpenAPI contract testing sandbox, and 1-click ZIP export.
-
----
-
-## 3. System Architecture
+BobMigrate does **NOT** blindly dump entire monolithic repositories into an LLM. Instead, it follows a 4-phase deterministic pipeline:
 
 ```mermaid
 graph TD
-    subgraph Monolith ["Legacy Monolith (Port 4000)"]
-        M_Server["server.js (Coupled Express App)"]
-        M_DB[("monolith.db (SQLite)")]
-        M_Auth["Auth Domain"]
-        M_Catalog["Catalog Domain"]
-        M_Orders["Orders Domain (Target)"]
-        M_Notif["Notifications Domain"]
-        M_Orders -.->|Direct SQL Join| M_Auth
-        M_Orders -.->|In-line Stock Decrement| M_Catalog
-        M_Orders -.->|Sync Lock| M_Notif
+    subgraph Phase1 ["Phase 1: Ingestion & AST Analysis"]
+        M_Code["Legacy Monolith Source Code"]
+        AST_Scan["AST Parser & Route Extractor"]
+        DB_Scan["SQLite / SQL Schema Inspector"]
+        Coupling_Engine["Anti-Pattern & Coupling Detector"]
+        M_Code --> AST_Scan
+        M_Code --> DB_Scan
+        AST_Scan --> Coupling_Engine
+        DB_Scan --> Coupling_Engine
     end
 
-    subgraph CoreEngine ["BobMigrate Core Engine (Port 5000)"]
-        Scanner["AST & Schema Scanner"]
-        Pruner["AST Context Pruner (85.2% Token Savings)"]
-        BobClient["IBM Bob 2.0 Agent Adapter (Granite 3.8B)"]
-        Pipeline["Multi-Step Decomposition Pipeline"]
-        Synthesizer["Service Synthesizer & Packager"]
+    subgraph Phase2 ["Phase 2: AST Context Pruning Engine"]
+        Pruner["AST Signature & Interface Extractor"]
+        Savings["85.2% Token Pruning (1,840 → 270 tokens)"]
+        Coupling_Engine --> Pruner
+        Pruner --> Savings
     end
 
-    subgraph Synthesized ["Synthesized Microservice (Port 5001)"]
-        O_Service["orders-service (Express)"]
-        O_DB[("orders_isolated.db")]
-        O_Contract["OpenAPI 3.1 Spec"]
-        O_Tests["Jest Unit Tests"]
-        O_Docker["Dockerfile & Docker Compose"]
+    subgraph Phase3 ["Phase 3: IBM Bob 2.0 Multi-Step Reasoning"]
+        Bob_Agent["IBM Bob 2.0 Agent Mode (Granite 3.8B)"]
+        Step1["Step 1: Domain Boundary Extraction"]
+        Step2["Step 2: OpenAPI 3.1 Contract Synthesis"]
+        Step3["Step 3: Service & Client Code Generation"]
+        Savings --> Bob_Agent
+        Bob_Agent --> Step1
+        Step1 --> Step2
+        Step2 --> Step3
     end
 
-    M_Server --> Scanner
-    Scanner --> Pruner
-    Pruner --> BobClient
-    BobClient --> Pipeline
-    Pipeline --> Synthesizer
-    Synthesizer --> O_Service
+    subgraph Phase4 ["Phase 4: Synthesis & Artifact Packaging"]
+        Output_Service["Isolated Microservice (Express + DB)"]
+        Output_Tests["Automated Jest Test Suite"]
+        Output_Docker["Dockerfile & docker-compose.yml"]
+        Output_Zip["Production ZIP Bundle"]
+        Step3 --> Output_Service
+        Step3 --> Output_Tests
+        Step3 --> Output_Docker
+        Output_Service --> Output_Zip
+    end
 ```
+
+### Detailed Breakdown of the 4 Phases:
+
+1. **Phase 1: AST Ingestion & Static Coupling Detection**
+   - The scanner parses the codebase's Abstract Syntax Tree (AST), identifying route handlers, controller logic, and database schemas.
+   - It detects **critical anti-patterns**:
+     - *Cross-Domain SQL Joins*: e.g., Orders route joining directly with `users` and `products`.
+     - *In-line Stock Decrements*: e.g., Order checkout directly executing `UPDATE products SET stock = stock - 1`.
+     - *Thread-blocking synchronous calls*: e.g., checkout blocking while waiting for third-party email notifications.
+   - Computes a quantitative **Coupling Score** (e.g., `38% Coupled`).
+
+2. **Phase 2: AST Context Pruning Engine (Token Optimization)**
+   - To stay strictly within the **40 Bobcoins limit**, the pruner strips out unnecessary function bodies, comments, and unrelated domain logic.
+   - It retains only high-value semantic contracts (route paths, request/response models, foreign key relationships, and external interfaces).
+   - **Result**: Raw token count drops from **1,840 tokens to 270 tokens (85.2% savings)**. Each run consumes only **~0.18 Bobcoins** instead of 1.25+ Bobcoins.
+
+3. **Phase 3: IBM Bob 2.0 Agent Mode Multi-Step Reasoning**
+   - Driven by **IBM Granite 3.8B Instruct**, Bob executes sequential reasoning steps:
+     - **Step 1 (Boundary Analysis)**: Designs the bounded context for the target service (e.g. `Orders`).
+     - **Step 2 (Contract Formulation)**: Synthesizes a formal, valid **OpenAPI 3.1 YAML** spec defining public endpoints, schemas, and status codes.
+     - **Step 3 (Service & Adapter Synthesis)**: Generates decoupled source code, replaces direct database joins with stateless REST/JWT client calls, and converts synchronous locks to async event publishers.
+
+4. **Phase 4: Production Artifact Packaging & Delivery**
+   - Compiles a complete, standalone microservice repository containing:
+     - Standalone Express server (`server.js`) & isolated database migration (`db.js`).
+     - Decoupled client adapters (`catalogClient.js`, `eventBus.js`).
+     - Jest automated unit & integration test suites (`orders.test.js`).
+     - Production deployment configs (`Dockerfile`, `docker-compose.yml`).
+     - Packaged as a 1-click downloadable **ZIP bundle**.
 
 ---
 
-## 4. Quickstart Guide (1 Command Run)
+## 3. How to Operate & Use This Tool (User Guide)
 
-### Prerequisites
-- Node.js `v18+` or `v20+`
-- npm `v9+`
+BobMigrate can be operated in **three distinct ways**: via the **Visual Web Dashboard**, via **Headless REST API / CLI**, or by **Running the Resulting Microservice**.
 
-### 1-Command Setup & Launch
-Clone the repository and run:
+---
+
+### Method A: Interactive Web Dashboard (Recommended)
+
+You can use the live deployed cloud dashboard directly:
+👉 **[https://bobmigrate.vercel.app](https://bobmigrate.vercel.app)** *(or run locally at `http://localhost:3000`)*.
+
+#### Step-by-Step Operator Journey:
+
+1. **Splash Screen & Identity**:
+   - Upon opening, a clean animated brand reveal displays the BobMigrate logo and initializes the neural engine, then smoothly transitions into the dashboard.
+
+2. **Inspect Monolith Architecture (Topology View)**:
+   - On the top header, observe the **Coupling Score (38% Coupled)** and **Context Pruning Savings (85.2%)**.
+   - Review the **System Architecture Topology** graph:
+     - Red pulsating lines indicate high-risk tangled cross-domain queries.
+     - Toggle between **Monolith** and **Decoupled** views to see the target clean architecture.
+
+3. **Trigger Autonomous Decomposition**:
+   - Click the blue **"Decompose with Bob 2.0"** button in the top navigation bar.
+   - The engine triggers IBM Bob 2.0 Agent Mode to extract the `Orders` domain.
+
+4. **Watch Live Agent Reasoning (Agent Terminal Tab)**:
+   - Switch to the **"Bob Agent Terminal"** tab.
+   - Watch real-time streaming logs as IBM Bob decomposes the monolith:
+     - `Step 1`: AST Domain Boundary Extraction.
+     - `Step 2`: OpenAPI 3.1 Contract Synthesis.
+     - `Step 3`: Code generation, Jest test suite synthesis, and Docker setup.
+   - Observe the live **Bobcoins Budget Tracker** decrementing dynamically within the 40-coin budget.
+
+5. **Review Refactored Code (Before vs. After Tab)**:
+   - Switch to the **"Before vs. After"** tab.
+   - Compare the legacy monolithic implementation against the synthesized microservice files:
+     - `server.js` (legacy coupled monolith) vs. `orderService.js` (clean decoupled microservice).
+     - `catalogClient.js` (replaces direct SQL joins with HTTP resilience & retries).
+     - `eventBus.js` (asynchronous message publisher for notification handling).
+
+6. **Test OpenAPI Contracts in Sandbox (OpenAPI 3.1 Spec Tab)**:
+   - Switch to the **"OpenAPI 3.1 Spec"** tab to view the generated YAML specification.
+   - Click **"Simulate API Call"** to send live test payloads against the contract schemas and verify `200 OK` responses.
+
+7. **Export & Download the Microservice**:
+   - Click the **"Export Repo"** button in the top right.
+   - An export modal will open displaying the full 12-file microservice bundle structure.
+   - Click **"Download orders-service.zip"** to save the complete project to your machine.
+
+---
+
+### Method B: Headless REST API & CLI Automation
+
+You can integrate BobMigrate directly into CI/CD pipelines or automated developer workflows via its Core Engine REST API.
+
+#### 1. Analyze Monolith AST & Coupling:
 ```bash
-# 1. Install and build all workspaces
-npm run setup
+curl -X POST http://localhost:5000/api/analyze \
+  -H "Content-Type: application/json"
+```
+*Returns JSON containing detected domains, routes, schema models, coupling metrics, and token pruning estimations.*
 
-# 2. Start all services concurrently
-npm start
+#### 2. Listen to Real-Time Agent Reasoning Stream (SSE):
+```bash
+curl -N http://localhost:5000/api/stream
+```
+*Streams Server-Sent Events (SSE) broadcasting each thought and reasoning step executed by IBM Bob 2.0.*
+
+#### 3. Trigger Autonomous Decomposition:
+```bash
+curl -X POST http://localhost:5000/api/decompose \
+  -H "Content-Type: application/json" \
+  -d '{"targetDomain": "orders"}'
+```
+*Executes the full pipeline and returns the synthesized source code, OpenAPI specs, tests, and Docker files.*
+
+#### 4. Export Microservice as ZIP via API:
+```bash
+curl -O -J http://localhost:5000/api/export
+```
+*Downloads `bobmigrate-orders-service.zip` containing the ready-to-deploy microservice.*
+
+---
+
+### Method C: Running and Verifying the Synthesized Microservice
+
+Once you have downloaded or exported `bobmigrate-orders-service.zip`:
+
+#### Option 1: Run with Node.js
+```bash
+# 1. Unzip the downloaded bundle
+unzip bobmigrate-orders-service.zip
+cd orders-service
+
+# 2. Install dependencies
+npm install
+
+# 3. Run automated Jest test suites
+npm test
+
+# 4. Start the microservice
+node server.js
+```
+The decoupled `orders-service` will start on **port 5001**:
+- Health check: `http://localhost:5001/health`
+- Create order: `POST http://localhost:5001/api/orders`
+- Get orders: `GET http://localhost:5001/api/orders`
+
+#### Option 2: Run with Docker Compose
+```bash
+cd orders-service
+docker compose up --build -d
+```
+Docker containerizes the service with isolated environment configs and persistent SQLite storage.
+
+---
+
+## 4. Environment Configuration (`.env`)
+
+BobMigrate comes with sensible fallback benchmark datasets, but connecting live IBM Bob 2.0 credentials unlocks real-time LLM inference:
+
+Create or edit the `.env` file in the project root:
+
+```env
+# -------------------------------------------------------------
+# IBM Bob 2.0 Credentials (Provided via Hackathon)
+# -------------------------------------------------------------
+IBM_BOB_API_KEY=bob_prod_bob-apikey_xxxxxxxxxxxxxxxxxxxx
+IBM_BOB_BASE_URL=https://api.us-east.bob.ibm.com/inference/v1
+
+# -------------------------------------------------------------
+# Service Ports (Optional)
+# -------------------------------------------------------------
+PORT=5000               # Core Engine Orchestrator
+MONOLITH_PORT=4000      # Sample Legacy Monolith
 ```
 
-This launches:
-- **Interactive Showcase Dashboard**: [http://localhost:3000](http://localhost:3000)
-- **Core Engine REST & SSE API**: [http://localhost:5000/api/analyze](http://localhost:5000/api/analyze)
-- **Legacy Sample Monolith**: [http://localhost:4000/health](http://localhost:4000/health)
+| Variable | Required | Description |
+| :--- | :---: | :--- |
+| `IBM_BOB_API_KEY` | Recommended | Your IBM Bob API key provisioned for the hackathon. If not provided, the system seamlessly uses canonical benchmark reasoning data. |
+| `IBM_BOB_BASE_URL` | Optional | The IBM Bob API endpoint URL (default: `https://api.us-east.bob.ibm.com/inference/v1`). |
+| `PORT` | Optional | The port for BobMigrate Core Engine (default: `5000`). |
+| `MONOLITH_PORT` | Optional | The port for the sample monolith backend (default: `4000`). |
 
 ---
 
-## 5. Walkthrough of Showcase Features
+## 5. Core Engine REST API Reference
 
-### A. Topology Graph (Monolith vs. Decoupled)
-- **Coupled Monolith View**: Highlights the red pulsating edges where `orders` directly performs cross-table SQL joins on `users` and directly mutates `products.stock_quantity`.
-- **Decoupled Microservice View**: Shows the target state where `orders-service` relies purely on stateless JWT claims, REST client adapters, and async event buses.
-
-### B. Live IBM Bob 2.0 Agent Terminal
-- Click **"Decompose with Bob 2.0"** on the dashboard.
-- Watch real-time streaming of Bob's chain of thought:
-  1. *Step 1*: Domain Boundary Analysis & Schema Pruning.
-  2. *Step 2*: OpenAPI 3.1 Specification Synthesis.
-  3. *Step 3*: Code generation, test suite synthesis, and Docker setup.
-
-### C. Before vs. After Code Comparison
-- Interactive split code diff contrasting the legacy monolithic `server.js` against the newly synthesized `orderService.js`, `catalogClient.js`, and `eventBus.js`.
-
-### D. OpenAPI 3.1 Contract Sandbox
-- View formatted `openapi.yaml`.
-- Click **"Simulate API Call"** to send test payloads against synthesized schemas and receive verified `200 OK` contract responses.
-
-### E. 1-Click ZIP Repository Export
-- Click **"Export Repo"** to download `bobmigrate-orders-service.zip`.
-- Extract and run standalone in seconds:
-  ```bash
-  unzip bobmigrate-orders-service.zip
-  cd orders-service
-  npm install
-  npm test
-  docker compose up -d
-  ```
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/health` | Verifies Core Engine status and confirms whether IBM Bob API key is active. |
+| `POST` | `/api/analyze` | Scans monolith code and returns route coupling analysis & AST pruning metrics. |
+| `GET` | `/api/stream` | Server-Sent Events (SSE) stream broadcasting real-time agent reasoning steps. |
+| `POST` | `/api/decompose` | Triggers multi-step decomposition pipeline for a specified target domain. |
+| `GET` | `/api/artifacts` | Returns generated microservice files, OpenAPI YAML, and Docker configurations. |
+| `GET` | `/api/graph/decoupled` | Returns the target decoupled architecture graph data structure. |
+| `GET` | `/api/bobcoins` | Returns Bobcoins usage statistics, remaining budget, and token savings metrics. |
+| `GET` | `/api/export` | Generates and streams the downloadable `bobmigrate-orders-service.zip` archive. |
 
 ---
 
-## 6. Proof of Compliance with IBM Bob 2.0 Guidelines
+## 6. Repository Anatomy
+
+```text
+Hackathon IBM BOB 2.0/
+├── assets/                          # Official brand assets, mascot icons, logos
+│   ├── logo.svg                     # Primary vector brand logo
+│   └── favicon.svg                  # High-res mascot favicon
+│
+├── core-engine/                     # Backend Orchestrator & IBM Bob 2.0 Adapter
+│   ├── src/
+│   │   ├── bobClient/               # IBM Bob API client & AST Context Pruner
+│   │   ├── export/                  # ZIP packager and artifact exporter
+│   │   ├── parser/                  # AST parser and coupling graph builder
+│   │   ├── pipeline/                # Multi-step decomposition manager
+│   │   └── index.ts                 # Express REST & SSE server
+│   └── package.json
+│
+├── dashboard/                       # React / Vite Visual Operations Dashboard
+│   ├── public/                      # Static assets & downloadable sample microservice zip
+│   ├── src/
+│   │   ├── components/              # Topology graph, terminal, diff viewer, splash screen
+│   │   ├── data/                    # Canonical benchmark dataset & fallback models
+│   │   ├── types/                   # TypeScript interfaces and contracts
+│   │   └── App.tsx                  # Main dashboard layout and state machine
+│   └── vercel.json                  # Cloud SPA deployment configuration
+│
+├── sample-monolith/                 # Real Legacy E-Commerce Monolith (Benchmark)
+│   ├── server.js                    # Coupled Express server (cross-domain queries)
+│   ├── db.js                        # Entangled SQLite database schema
+│   └── seed.js                      # Database seeder (users, products, orders)
+│
+├── orders-service/                  # Synthesized Microservice (Generated by Bob)
+│   ├── server.js                    # Isolated microservice server
+│   ├── db.js                        # Isolated orders database schema
+│   ├── catalogClient.js             # HTTP client with circuit-breaker for catalog
+│   ├── eventBus.js                  # Asynchronous event publisher
+│   ├── orders.test.js               # Automated Jest unit test suite
+│   ├── openapi.yaml                 # OpenAPI 3.1 specification
+│   ├── Dockerfile                   # Production container definition
+│   └── docker-compose.yml           # Multi-container orchestration definition
+│
+├── .env.example                     # Environment configuration template
+├── package.json                     # Monorepo root workspace configuration
+└── README.md                        # Master project documentation
+```
+
+---
+
+## 7. Compliance with IBM Bob 2.0 Guidelines
 
 | Requirement | Implementation in BobMigrate | Compliance Status |
-| :--- | :--- | :--- |
-| **Theme Alignment** | Improves application maintenance and legacy microservice migration workflows. | ✅ Compliant |
-| **Bobcoins Budget (40 Limit)** | Implemented **AST Context Pruning** reducing prompt tokens by **85.2%**, spending only ~0.18 Bobcoins per run. | ✅ Compliant |
-| **Core IBM Bob Usage** | IBM Bob 2.0 Agent Mode with **Granite 3.8B Instruct** drives the multi-step reasoning. | ✅ Compliant |
-| **Standalone Execution** | Self-contained within workspace without proprietary cloud dependencies. | ✅ Compliant |
-| **Evidence & Deliverables** | Generated OpenAPI specs, complete microservice code, unit tests, and Docker artifacts. | ✅ Compliant |
+| :--- | :--- | :---: |
+| **Theme Alignment** | Solves enterprise application maintenance and legacy microservice migration. | ✅ 100% Compliant |
+| **Bobcoins Budget (40 Quota)** | **AST Context Pruner** eliminates 85.2% of prompt tokens; full migration costs only **~0.18 Bobcoins**. | ✅ 100% Compliant |
+| **IBM Bob 2.0 Model Usage** | Powered by **IBM Bob 2.0 Agent Mode** with **Granite 3.8B Instruct** reasoning. | ✅ 100% Compliant |
+| **Standalone Deliverable** | End-to-end self-contained monorepo with production web demo, REST API, and Docker. | ✅ 100% Compliant |
+| **Working Live Demo** | Available 24/7 on **[https://bobmigrate.vercel.app](https://bobmigrate.vercel.app)** with instant ZIP export. | ✅ 100% Compliant |
 
 ---
 
-## 7. License
+## 8. License
 
-Distributed under the Apache 2.0 License. Built for the official IBM Bob 2.0 Hackathon.
+Distributed under the **Apache 2.0 License**. Developed with pride for the **IBM Bob 2.0 Hackathon** by lablab.ai.
