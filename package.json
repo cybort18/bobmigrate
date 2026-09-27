@@ -13,7 +13,10 @@
     "dashboard:build": "npm run build --prefix dashboard",
     "dashboard:dev": "npm run dev --prefix dashboard",
     "setup": "npm run monolith:install && npm run monolith:seed && npm run engine:install && npm run engine:build && npm run dashboard:install && npm run dashboard:build",
-    "start": "node start-all.js"
+    "start": "node start-all.js",
+    "cli": "node cli.js",
+    "test:service": "npm test --prefix orders-service",
+    "test:bob": "node test-bob-live.js"
   },
   "keywords": [
     "ibm-bob",
